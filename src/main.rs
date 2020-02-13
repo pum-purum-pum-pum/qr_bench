@@ -2,7 +2,7 @@ use bardecoder;
 use crossbeam_utils::thread;
 use image::imageops::FilterType;
 use std::time::Instant;
-const MSG_NUM: usize = 100;
+const MSG_NUM: usize = 120;
 
 fn main() {
     // Use default decoder
