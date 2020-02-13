@@ -1,0 +1,23 @@
+[package]
+name = "my_bardecode"
+version = "0.1.0"
+authors = ["vlad <vladzhukovtirko@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bardecoder = "0.1"
+image = "*"
+criterion = "0.3.1"
+crossbeam = "0.7.3"
+crossbeam-utils = "0.7.0"
+
+[[bench]]
+name = "decode"
+harness = false
+
+
+[lib]
+name = "my_bardecode"
+crate-type = ["dylib"]
