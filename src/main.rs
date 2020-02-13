@@ -10,7 +10,7 @@ fn main() {
     thread::scope(|s| {
     	let mut threads = vec![];
 		for _ in 0..MSG_NUM {
-		    let img = image::open("2mb.jpg").unwrap();
+		    let img = image::open("test.jpg").unwrap();
 		    // images.push(img);
             let handle = s.spawn(move |_| {
 			    let decoder = bardecoder::default_decoder();
