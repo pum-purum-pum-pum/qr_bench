@@ -12,12 +12,3 @@ image = "*"
 criterion = "0.3.1"
 crossbeam = "0.7.3"
 crossbeam-utils = "0.7.0"
-
-[[bench]]
-name = "decode"
-harness = false
-
-
-[lib]
-name = "my_bardecode"
-crate-type = ["dylib"]

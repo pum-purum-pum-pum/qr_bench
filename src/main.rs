@@ -13,7 +13,7 @@ fn main() {
     thread::scope(|s| {
         let mut threads = vec![];
         // for _ in 0..MSG_NUM {
-        for entry in fs::read_dir("images").unwrap() {
+        for entry in fs::read_dir("images2").unwrap() {
         	// let filename = entry.unwrap().file_name();
         	// dbg!(&filename);
 
