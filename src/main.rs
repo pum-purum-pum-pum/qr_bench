@@ -26,7 +26,7 @@ fn main() {
                 // decoder.prepare(Box::new(BlockedMean::new(7, 9)));
                 let img = img.resize(800, 600, FilterType::Nearest);
 	            // img.save(Path::new("resized.jpg"));
-                let results = decoder.decode(img);
+                let results = decoder.decode(&img);
                 println!("{:?}", results);
             });
             threads.push(handle);

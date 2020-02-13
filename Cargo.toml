@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bardecoder = "0.1"
-image = "*"
+bardecoder = "0.2.1"
+image = "0.22"
 criterion = "0.3.1"
 crossbeam = "0.7.3"
 crossbeam-utils = "0.7.0"
