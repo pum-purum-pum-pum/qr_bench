@@ -60,7 +60,6 @@ fn main() {
     // use std::cmp::Reverse;
     // file_names.sort_by_key(|ref file_name| Reverse(file_name));
     file_names.sort();
-    file_names.reverse();
     let ordered_filenames = if file_names.len() > 2 * FIRST_TAKE {
         order(&mut file_names, FIRST_TAKE)
     } else {
