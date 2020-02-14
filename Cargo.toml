@@ -1,5 +1,5 @@
 [package]
-name = "qrdetect_second_attempt"
+name = "qr_searcher"
 version = "0.1.0"
 authors = ["vlad <vladzhukovtirko@gmail.com>"]
 edition = "2018"

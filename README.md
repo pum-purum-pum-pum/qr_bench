@@ -1,7 +1,13 @@
-```sudo apt-get install -y cargo```
+for installing cargo run (or read)
+```bash install_deps.sh```
+to make binary:
 
-```add test.png in this directory```
+```produce_binary.sh```
 
-```cargo run --release```
+this will produce produce_binary qr_searcher
 
+Run 
 
+```./qr_searcher -h```
+
+for details
