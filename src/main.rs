@@ -3,7 +3,7 @@ use image;
 // another library to try for this task
 use quirc;
 
-use image::{imageops::{FilterType, blur, unsharpen}, ImageFormat, Luma};
+use image::{imageops::{FilterType, blur, unsharpen}, Luma};
 use qrcode::{types::EcLevel, QrCode};
 use quirc::{QrCoder, Error, Codes};
 use std::sync::atomic::AtomicBool;
@@ -43,7 +43,7 @@ pub fn order<T>(names: &mut Vec<T>, first_take: usize) -> Vec<T> {
 
 fn main() {
     if false { // TODO generator if needed
-        let data = &b"lxsdsds-1:david:cowman:david@gojump-america.com:OS:i:0001110"[..];
+        let data = &b"hello world"[..];
         let code = QrCode::with_error_correction_level(data, EcLevel::L).unwrap();
         let image = code.render::<Luma<u8>>().build();
         image.save("qr_generated.png").unwrap();
@@ -57,8 +57,6 @@ fn main() {
     }
     // sort and take the first N the last N and then the middle
 
-    // use std::cmp::Reverse;
-    // file_names.sort_by_key(|ref file_name| Reverse(file_name));
     file_names.sort();
     let ordered_filenames = if file_names.len() > 2 * FIRST_TAKE {
         order(&mut file_names, FIRST_TAKE)
