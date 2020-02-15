@@ -11,9 +11,9 @@ cp target/release/libqr_searcher.so ./qr_searcher.so
 
 This will produce `.so` dynamic library you can easily use from `Python`. See `example.py`.
 
-assuming you have directory with images called `test`
-```python example.py
-```
+assuming you have directory with images called `test`:
+
+```python example.py```
 
 # CLI
 To make binary run:
