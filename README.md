@@ -7,10 +7,13 @@ Once you've got cargo on your machine
 ```
 cargo build --release
 cp target/release/libqr_searcher.so ./qr_searcher.so
-python example.py
 ```
 
 This will produce `.so` dynamic library you can easily use from `Python`. See `example.py`.
+
+assuming you have directory with images called `test`
+```python example.py
+```
 
 # CLI
 To make binary run:
