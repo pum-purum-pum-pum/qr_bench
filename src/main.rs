@@ -45,15 +45,4 @@ fn main() {
     } else {
         println!("not found");
     }
-    //     TODO generator if needed
-    //
-    // if false {
-    //     use image;
-    //     use image::Luma;
-    //     use qrcode::{types::EcLevel, QrCode};
-    //     let data = &b"hello world"[..];
-    //     let code = QrCode::with_error_correction_level(data, EcLevel::L).unwrap();
-    //     let image = code.render::<Luma<u8>>().build();
-    //     image.save("qr_generated.png").unwrap();
-    // }
 }
