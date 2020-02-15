@@ -1,26 +1,27 @@
 use std;
 use std::fs::{self, File};
-use std::path::PathBuf;
 use std::io::Read;
+use std::path::PathBuf;
 use std::str::from_utf8;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Instant;
 
-use log::{debug};
+use log::debug;
 
 use crate::error::{QRErrors, Result};
 
-use crossbeam_utils::thread;
 use crossbeam::thread::Scope;
+use crossbeam_utils::thread;
 use image;
 use image::{
-    imageops::{blur, unsharpen, FilterType}, GrayImage
+    imageops::{blur, unsharpen, FilterType},
+    GrayImage,
 };
 use quirc::{Codes, QrCoder};
 // another library to try for this task
-use quirc;
 use once_cell::sync::Lazy;
+use quirc;
 
 // max number of images to process first(from begining and end of images sequence)
 const FIRST_TAKE: usize = 10;
@@ -36,13 +37,12 @@ static QR_MSG: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
 // flag to check from threads if we found qr code
 static QR_FOUND: AtomicBool = AtomicBool::new(false);
 
-
 // perform ordering in which we will process our images:
 // [0..n][l - n..l][n, l - n]. n is param, l is lenght of array
 pub fn order<T: Clone>(names: &mut Vec<T>, first_take: usize) -> Vec<T> {
     if 2 * first_take > names.len() {
-        return names.clone()
-    } 
+        return names.clone();
+    }
     let mut ordered_filenames: Vec<_> = names.drain(..first_take).collect();
     let last = names.drain((names.len() - first_take)..);
     ordered_filenames.extend(last);
@@ -84,7 +84,9 @@ pub fn detection(image: GrayImage) -> Result<()> {
         return Ok(());
     }
     let mut quirc = QrCoder::new().map_err(|_| QRErrors::QrDetectError)?;
-    let codes = quirc.codes(&image, width, height).map_err(|_| QRErrors::QrDetectError)?;
+    let codes = quirc
+        .codes(&image, width, height)
+        .map_err(|_| QRErrors::QrDetectError)?;
     for code in codes {
         match code {
             Ok(code) => {
@@ -98,7 +100,9 @@ pub fn detection(image: GrayImage) -> Result<()> {
                     // blur actually not working in unsharpen function
                     // TODO investigate why
                     let image = unsharpen(&image, 0.01, UNSHARPEN_THRESHOLD);
-                    let codes = quirc.codes(&image, width, height).map_err(|_| QRErrors::QrDetectError)?;
+                    let codes = quirc
+                        .codes(&image, width, height)
+                        .map_err(|_| QRErrors::QrDetectError)?;
                     let _err = extract_code(codes); // if ok it will extract value in global msg
                 }
             }
@@ -140,7 +144,9 @@ pub fn qr_search(dir_name: &str) -> Result<String> {
     }
     // sort, take the first N, the last N and the rest middle
     file_names.sort();
-    let first_take = ((0.1 * (file_names.len() as f32)) as usize).max(1).min(FIRST_TAKE);
+    let first_take = ((0.1 * (file_names.len() as f32)) as usize)
+        .max(1)
+        .min(FIRST_TAKE);
     let ordered_filenames = order(&mut file_names, first_take);
 
     // run scan in the directory, !ignoring panics in threads
@@ -152,6 +158,6 @@ pub fn qr_search(dir_name: &str) -> Result<String> {
     if let Some(msg) = &*QR_MSG.lock()? {
         Ok(msg.clone())
     } else {
-        Err(QRErrors::QrSerachError)?
+        Err(QRErrors::QrSerachError.into())
     }
 }

@@ -5,9 +5,10 @@ use clap::{App, Arg};
 mod error;
 mod scan;
 
-#[macro_use] extern crate log;
-use log::LevelFilter;
+#[macro_use]
+extern crate log;
 use env_logger::Builder;
+use log::LevelFilter;
 
 fn main() {
     let matches = App::new("QRSearcher")
@@ -23,7 +24,7 @@ fn main() {
             Arg::with_name("v")
                 .short("v")
                 .multiple(true)
-                .help("Sets verbosity")
+                .help("Sets verbosity"),
         )
         .get_matches();
     let dir_name = matches
@@ -45,7 +46,7 @@ fn main() {
         println!("not found");
     }
     //     TODO generator if needed
-    // 
+    //
     // if false {
     //     use image;
     //     use image::Luma;

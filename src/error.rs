@@ -4,20 +4,16 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[derive(Debug, Clone)]
 pub enum QRErrors {
-	QrSerachError, // just not found qr in the dir
-	QrDetectError, // failed to detect qr on image
+    QrSerachError, // just not found qr in the dir
+    QrDetectError, // failed to detect qr on image
 }
 
 impl fmt::Display for QRErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    	match self {
-    		QRErrors::QrSerachError => {
-		        write!(f, "failed to find qr")
-    		}
-    		QRErrors::QrDetectError => {
-    			write!(f, "failed to detect qr")
-    		}
-    	}
+        match self {
+            QRErrors::QrSerachError => write!(f, "failed to find qr"),
+            QRErrors::QrDetectError => write!(f, "failed to detect qr"),
+        }
     }
 }
 
