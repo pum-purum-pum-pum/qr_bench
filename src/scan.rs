@@ -39,7 +39,10 @@ static QR_FOUND: AtomicBool = AtomicBool::new(false);
 
 // perform ordering in which we will process our images:
 // [0..n][l - n..l][n, l - n]. n is param, l is lenght of array
-pub fn order<T>(names: &mut Vec<T>, first_take: usize) -> Vec<T> {
+pub fn order<T: Clone>(names: &mut Vec<T>, first_take: usize) -> Vec<T> {
+    if 2 * first_take > names.len() {
+        return names.clone()
+    } 
     let mut ordered_filenames: Vec<_> = names.drain(..first_take).collect();
     let last = names.drain((names.len() - first_take)..);
     ordered_filenames.extend(last);
@@ -51,6 +54,12 @@ pub fn order<T>(names: &mut Vec<T>, first_take: usize) -> Vec<T> {
 fn order_test() {
     let mut names = vec!["a", "b", "c", "d"];
     assert_eq!(order(&mut names, 1), ["a", "d", "b", "c"]);
+}
+
+#[test]
+fn empty_order() {
+    let mut names: Vec<&str> = vec![];
+    order(&mut names, 1);
 }
 
 // go through codes we found and assign to the global variable if found one
