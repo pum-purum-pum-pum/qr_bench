@@ -10,7 +10,7 @@ cp target/release/libqr_searcher.so ./qr_searcher.so
 python example.py
 ```
 
-This will produce `.so` dynamic library you can easily use from `Python`. See `example.py` as an example.
+This will produce `.so` dynamic library you can easily use from `Python`. See `example.py`.
 
 # CLI
 To make binary run:
