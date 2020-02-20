@@ -16,7 +16,7 @@ use crossbeam_utils::thread;
 use image;
 use image::{
     imageops::{blur, unsharpen, FilterType},
-    GrayImage,
+    GrayImage, Luma,
 };
 use quirc::{Codes, QrCoder};
 // another library to try for this task
@@ -33,9 +33,9 @@ const RESIZE_WIDTH: u32 = 800;
 const RESIZE_HEIGHT: u32 = 600;
 
 // global msg of the qr code synced with threads via Mutex.
-static QR_MSG: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
+pub static QR_MSG: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
 // flag to check from threads if we found qr code
-static QR_FOUND: AtomicBool = AtomicBool::new(false);
+pub static QR_FOUND: AtomicBool = AtomicBool::new(false);
 
 // perform ordering in which we will process our images:
 // [0..n][l - n..l][n, l - n]. n is param, l is lenght of array
@@ -63,68 +63,89 @@ fn empty_order() {
 }
 
 // go through codes we found and assign to the global variable if found one
-pub fn extract_code(codes: Codes) -> Result<()> {
+pub fn extract_code(codes: Codes) -> Result<String> {
+    let mut result = None;
     for code in codes {
         if let Ok(code) = code {
+            let msg = from_utf8(&code.payload)?.to_string();
+            result = Some(msg.clone());
             QR_FOUND.compare_and_swap(false, true, Ordering::SeqCst);
-            *QR_MSG.lock()? = Some(from_utf8(&code.payload)?.to_string());
+            *QR_MSG.lock()? = Some(msg);
             break; // we only need (first) one
         }
     }
-    Ok(())
+    result.ok_or(Box::new(QRErrors::QrDetectError))
 }
 
 // try to detect qr. If found write in global variable
-pub fn detection(image: GrayImage) -> Result<()> {
+pub fn detection(image: GrayImage) -> Result<String> {
     debug!("start detection");
     let width = image.width();
     let height = image.height();
+
+    // let image = blur(&image, BLUR_SIZE);
+    // // blur actually not working in unsharpen function(we are doing it separetly)
+    // // TODO investigate why
+    // let image = unsharpen(&image, 0.01, UNSHARPEN_THRESHOLD);
+
     if QR_FOUND.load(Ordering::SeqCst) {
         // QR already found
-        return Ok(());
+        return Err(Box::new(QRErrors::QrAlreadyFound));
     }
     let mut quirc = QrCoder::new().map_err(|_| QRErrors::QrDetectError)?;
     let codes = quirc
         .codes(&image, width, height)
         .map_err(|_| QRErrors::QrDetectError)?;
+    let mut result = None;
     for code in codes {
         match code {
             Ok(code) => {
                 QR_FOUND.compare_and_swap(false, true, Ordering::SeqCst);
-                *QR_MSG.lock()? = Some(from_utf8(&code.payload)?.to_string());
+                let code = from_utf8(&code.payload)?.to_string();
+                result = Some(code.clone());
+                *QR_MSG.lock()? = Some(code);
             }
             Err(err) => {
                 if let quirc::Error::Decode(_) = err {
                     let mut quirc = QrCoder::new().map_err(|_| QRErrors::QrDetectError)?;
                     let image = blur(&image, BLUR_SIZE);
-                    // blur actually not working in unsharpen function
+                    // blur actually not working in unsharpen function(we are doing it separetly)
                     // TODO investigate why
                     let image = unsharpen(&image, 0.01, UNSHARPEN_THRESHOLD);
                     let codes = quirc
                         .codes(&image, width, height)
                         .map_err(|_| QRErrors::QrDetectError)?;
-                    let _err = extract_code(codes); // if ok it will extract value in global msg
+                    let code = extract_code(codes); // if ok it will extract value in global msg
+                    if let Ok(code) = code {
+                        result = Some(code)
+                    }
                 }
             }
         }
     }
-    Ok(())
+    result.ok_or(Box::new(QRErrors::QrDetectError))
 }
 
-pub fn laod_and_detect(path: &PathBuf, scope: &Scope) -> Result<()> {
-    if QR_FOUND.load(Ordering::SeqCst) {
-        // QR already found
-        return Ok(());
-    }
+pub fn load_resized_luma(path: &PathBuf) -> Result<image::ImageBuffer<Luma<u8>, Vec<u8>>> {
     let mut file = File::open(path.clone())?;
     let mut vec = Vec::new();
     file.read_to_end(&mut vec)?;
     let image = image::load_from_memory(&vec)?
         .resize(RESIZE_WIDTH, RESIZE_HEIGHT, FilterType::Nearest)
         .to_luma();
+    Ok(image)
+}
+
+pub fn load_and_detect(path: &PathBuf, scope: &Scope) -> Result<()> {
+    if QR_FOUND.load(Ordering::SeqCst) {
+        // QR already found
+        return Ok(());
+    }
+    let image = load_resized_luma(&path)?;
     let _handle = scope.spawn(move |_| {
         debug!("timestamp {:?}", Instant::now());
         let _err = detection(image); // ignoring detection error, searching further
+        debug!("detection {:?}", _err);
     });
     Ok(())
 }
@@ -152,7 +173,7 @@ pub fn qr_search(dir_name: &str) -> Result<String> {
     // run scan in the directory, !ignoring panics in threads
     let _err = thread::scope(|s| {
         for path in ordered_filenames.iter() {
-            let _err = laod_and_detect(&path, s);
+            let _err = load_and_detect(&path, s);
         }
     });
     if let Some(msg) = &*QR_MSG.lock()? {
