@@ -27,7 +27,7 @@ use quirc;
 const FIRST_TAKE: usize = 10;
 // When handling noisy images use blur with that kernel size for preprocessing
 const BLUR_SIZE: f32 = 4.;
-const UNSHARPEN_THRESHOLD: i32 = 20;
+const UNSHARPEN_THRESHOLD: i32 = 200;
 
 const RESIZE_WIDTH: u32 = 800;
 const RESIZE_HEIGHT: u32 = 600;
@@ -106,21 +106,24 @@ pub fn detection(image: GrayImage) -> Result<String> {
                 *QR_MSG.lock()? = Some(code);
             }
             Err(err) => {
-                if let quirc::Error::Decode(_) = err {
-                    let mut quirc = QrCoder::new().map_err(|_| QRErrors::QrDetectError)?;
-                    let image = blur(&image, BLUR_SIZE);
-                    // blur actually not working in unsharpen function(we are doing it separetly)
-                    // TODO investigate why
-                    let image = unsharpen(&image, 0.01, UNSHARPEN_THRESHOLD);
-                    let codes = quirc
-                        .codes(&image, width, height)
-                        .map_err(|_| QRErrors::QrDetectError)?;
-                    let code = extract_code(codes); // if ok it will extract value in global msg
-                    if let Ok(code) = code {
-                        result = Some(code)
-                    }
-                }
+                // the case when we detect qr but failed to parse it
+                // possible try more then one filter and detect here
+                if let quirc::Error::Decode(_) = err {}
             }
+        }
+    }
+    if result.is_none() {
+        let mut quirc = QrCoder::new().map_err(|_| QRErrors::QrDetectError)?;
+        let image = blur(&image, BLUR_SIZE);
+        // blur actually not working in unsharpen function(we are doing it separetly)
+        // TODO investigate why
+        let image = unsharpen(&image, 0.01, UNSHARPEN_THRESHOLD);
+        let codes = quirc
+            .codes(&image, width, height)
+            .map_err(|_| QRErrors::QrDetectError)?;
+        let code = extract_code(codes); // if ok it will extract value in global msg
+        if let Ok(code) = code {
+            result = Some(code)
         }
     }
     result.ok_or(Box::new(QRErrors::QrDetectError))

@@ -7,6 +7,7 @@ pub enum QRErrors {
     QrSerachError, // just not found qr in the dir
     QrDetectError, // failed to detect qr on image
     QrAlreadyFound,
+    QrGenError,
 }
 
 impl fmt::Display for QRErrors {
@@ -15,6 +16,7 @@ impl fmt::Display for QRErrors {
             QRErrors::QrSerachError => write!(f, "failed to find qr"),
             QRErrors::QrDetectError => write!(f, "failed to detect qr"),
             QRErrors::QrAlreadyFound => write!(f, "qr already found, not need to search it"),
+            QRErrors::QrGenError => write!(f, "failed to generate qr"),
         }
     }
 }

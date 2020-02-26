@@ -1,2 +1,2 @@
 cargo build --release
-cp target/release/qr_searcher ./
+cp target/release/libqr_searcher.so ./qr_searcher.so
